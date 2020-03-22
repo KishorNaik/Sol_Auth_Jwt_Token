@@ -8,6 +8,20 @@ Create a Web Project.
 * Name the project Sol_Demo_WebApi and click Create.
 * In the Create a new ASP.NET Core Web Application dialog, confirm that .NET Core and ASP.NET Core 3.1 are selected. Select the API template and click Create.
 
+### Step 2
+Add following nuget package in Sol_Demo_WebApi project.
+[![Generic badge](https://img.shields.io/badge/Nuget-1.0.0-<COLOR>.svg)](https://www.nuget.org/packages/JwtAuthAsp.netCore/1.0.0)
+
+#### Using Nuget Package Manger:
+```
+PM> Install-Package JwtAuthAsp.netCore -Version 1.0.0
+```
+
+#### Using .Net CLI:
+```
+> dotnet add package JwtAuthAsp.netCore --version 1.0.0
+```
+
 ### Step 3  
 Define user model for passing data between repository and controller and can be used to return http response data from controller action methods
 ``` C#
