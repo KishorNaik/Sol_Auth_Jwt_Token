@@ -25,6 +25,6 @@ namespace Sol_Demo_WebApi.Models
         public String Password { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public String JwtToken { get; set; }
+        public String Token { get; set; }
     }
 }

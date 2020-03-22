@@ -39,10 +39,10 @@ namespace Sol_Demo_WebApi
                     leSetUp.JsonSerializerOptions.IgnoreNullValues = true;
                 });
 
-            services.Configure<JwtModel>(Configuration.GetSection("Jwt"));
-            var getSecretKey = Configuration.GetSection("Jwt").Get<JwtModel>();
+            services.Configure<AppSettingsModel>(Configuration.GetSection("Jwt"));
+            var getSecretKey = Configuration.GetSection("Jwt").Get<AppSettingsModel>();
 
-            services.AddJwtToken(getSecretKey.SecretKey);
+            services.AddJwtToken(getSecretKey.SecretKey); // Add Jwt Token Service
 
             services.AddTransient<IUserRepository, UserRepository>();
         }
@@ -57,7 +57,7 @@ namespace Sol_Demo_WebApi
 
             app.UseRouting();
 
-            app.UseJwtToken();
+            app.UseJwtToken(); // Use Jwt Token Middleware
 
             app.UseAuthorization();
 

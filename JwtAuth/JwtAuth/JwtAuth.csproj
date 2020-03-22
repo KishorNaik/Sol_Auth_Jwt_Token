@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Kishor Naik</Authors>
+    <Description>Asp.net core 3.1 JWT Authentication.</Description>
+    <PackageProjectUrl>https://github.com/KishorNaik/Sol_Auth_Jwt_Token</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/KishorNaik/Sol_Auth_Jwt_Token</RepositoryUrl>
+    <RepositoryType>Github</RepositoryType>
+    <PackageTags />
+    <PackageId>JwtAuthAsp.netCore</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

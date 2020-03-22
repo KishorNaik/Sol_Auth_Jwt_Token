@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sol_Demo_WebApi.Models
 {
-    public class JwtModel
+    public class AppSettingsModel
     {
         public String SecretKey { get; set; }
     }

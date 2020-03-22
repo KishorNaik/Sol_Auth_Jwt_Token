@@ -12,9 +12,9 @@ namespace Sol_Demo_WebApi.Repository
     public class UserRepository : IUserRepository
     {
         private readonly IGenerateJwtToken generateJwtToken = null;
-        private readonly IOptions<JwtModel> options = null; // Get SecretKey from appsetting.json
+        private readonly IOptions<AppSettingsModel> options = null; // Get SecretKey from appsetting.json
 
-        public UserRepository(IGenerateJwtToken generateJwtToken, IOptions<JwtModel> options)
+        public UserRepository(IGenerateJwtToken generateJwtToken, IOptions<AppSettingsModel> options)
         {
             this.generateJwtToken = generateJwtToken;
             this.options = options;
@@ -45,7 +45,7 @@ namespace Sol_Demo_WebApi.Repository
                 claims.Add(new Claim(ClaimTypes.Role, usersModel.Role)); // Role Base
 
                 // Generate Token
-                usersModel.JwtToken = await generateJwtToken.CreateJwtTokenAsync(options?.Value?.SecretKey, claims.ToArray(), DateTime.Now.AddDays(1));
+                usersModel.Token = await generateJwtToken.CreateJwtTokenAsync(options?.Value?.SecretKey, claims.ToArray(), DateTime.Now.AddDays(1));
 
                 usersModel.Password = null;
 
