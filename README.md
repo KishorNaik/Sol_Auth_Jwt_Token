@@ -1,4 +1,4 @@
-# JWT Authentication using Asp.net core 3.1
+# JWT Authentication using Asp.net core 3.1 & 5
 Using this library, we have to implement JWT (JSON Web Token) authentication in an ASP.NET Core 3.1 & 5 Web API.
 
 ### Step 1
