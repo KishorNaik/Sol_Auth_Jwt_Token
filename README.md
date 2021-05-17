@@ -10,7 +10,7 @@ Create a Web Project.
 
 ### Step 2
 Add following nuget package in Sol_Demo_WebApi project.
-[![Generic badge](https://img.shields.io/badge/Nuget-1.0.0-<COLOR>.svg)](https://www.nuget.org/packages/JwtAuthAsp.netCore/1.0.0)
+[![Generic badge](https://img.shields.io/badge/Nuget-1.0.1-<COLOR>.svg)](https://www.nuget.org/packages/JwtAuthAsp.netCore/1.0.1)
 
 #### Using Nuget Package Manger:
 ```
