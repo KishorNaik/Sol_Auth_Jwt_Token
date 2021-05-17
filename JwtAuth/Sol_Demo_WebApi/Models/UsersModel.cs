@@ -25,6 +25,9 @@ namespace Sol_Demo_WebApi.Models
         public String Password { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
+        public DateTime DateOfBirth { get; set; }
+
+        [DataMember(EmitDefaultValue = false)]
         public String Token { get; set; }
     }
 }

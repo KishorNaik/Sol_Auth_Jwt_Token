@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AuthJwt.Services;
 using JwtAuth.Middlewares;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sol_Demo_WebApi.Models;
+using Sol_Demo_WebApi.Policies;
 using Sol_Demo_WebApi.Repository;
 
 namespace Sol_Demo_WebApi
@@ -42,8 +44,16 @@ namespace Sol_Demo_WebApi
             services.Configure<AppSettingsModel>(Configuration.GetSection("Jwt"));
             var getSecretKey = Configuration.GetSection("Jwt").Get<AppSettingsModel>();
 
-            services.AddJwtToken(getSecretKey.SecretKey); // Add Jwt Token Service
+            services.AddJwtToken(getSecretKey.SecretKey,
+                (authOption) =>
+                {
+                    authOption.AddPolicy("AdminOnly", (policy) => policy.RequireRole("Admin"));// Role Base
+                    authOption.AddPolicy("UserOnly", (policy) => policy.RequireClaim("UserID")); // Claim base
+                    authOption.AddPolicy("Over21Only", (policy) => policy.Requirements.Add(new MinimumAgeRequirement(21))); // Policy Base
+                }
+                ); // Add Jwt Token Service
 
+            services.AddSingleton<IAuthorizationHandler, MinimumAgeHandler>();
             services.AddTransient<IUserRepository, UserRepository>();
         }
 

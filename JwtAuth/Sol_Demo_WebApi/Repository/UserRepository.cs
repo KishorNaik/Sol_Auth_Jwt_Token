@@ -26,23 +26,26 @@ namespace Sol_Demo_WebApi.Repository
             string tempFullName = "Kishor Naik";
             string tempUserName = "kishor11";
             string tempPassword = "123";
+            DateTime tempDateOfBirth = new DateTime(1986, 08, 11);
             int? tempId = 1;
             String tempRole = "Admin";
 
             dynamic data = null;
 
-            // Demo Purpose (Validate Login Credentails from database)
+            // Demo Purpose (Validate Login Credentials from database)
             if (usersModel.UserName == tempUserName && usersModel.Password == tempPassword)
             {
                 // Demo Purpose (Id,Role & fullName will get from database)
                 usersModel.Id = tempId;
                 usersModel.Role = tempRole;
                 usersModel.FullName = tempFullName;
+                usersModel.DateOfBirth = tempDateOfBirth;
 
                 // Add Claims for Authorization and Authentication with Jwt Token
                 List<Claim> claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.Name, Convert.ToString(usersModel.Id))); // Id Base
+                claims.Add(new Claim("UserID", Convert.ToString(usersModel.Id))); // Id Base
                 claims.Add(new Claim(ClaimTypes.Role, usersModel.Role)); // Role Base
+                claims.Add(new Claim(ClaimTypes.DateOfBirth, usersModel.DateOfBirth.ToString())); // Policy Base
 
                 // Generate Token
                 usersModel.Token = await generateJwtToken.CreateJwtTokenAsync(options?.Value?.SecretKey, claims.ToArray(), DateTime.Now.AddDays(1));

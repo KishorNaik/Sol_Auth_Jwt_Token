@@ -36,7 +36,10 @@ namespace Sol_Demo_WebApi.Controllers
             return base.Ok((Object)data);
         }
 
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
+        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "Over21Only")]
+        [Authorize(Policy = "UserOnly")]
         [HttpPost("dowork")]
         public IActionResult DoWork()
         {
