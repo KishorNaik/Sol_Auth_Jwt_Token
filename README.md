@@ -1,5 +1,5 @@
 # JWT Authentication using Asp.net core 3.1
-Using this library, we have to implement JWT (JSON Web Token) authentication in an ASP.NET Core 3.1 Web API.
+Using this library, we have to implement JWT (JSON Web Token) authentication in an ASP.NET Core 3.1 & 5 Web API.
 
 ### Step 1
 Create a Web Project.
@@ -14,12 +14,12 @@ Add following nuget package in Sol_Demo_WebApi project.
 
 #### Using Nuget Package Manger:
 ```
-PM> Install-Package JwtAuthAsp.netCore -Version 1.0.0
+PM> Install-Package JwtAuthAsp.netCore -Version 1.0.1
 ```
 
 #### Using .Net CLI:
 ```
-> dotnet add package JwtAuthAsp.netCore --version 1.0.0
+> dotnet add package JwtAuthAsp.netCore --version 1.0.1
 ```
 
 ### Step 3  
@@ -50,6 +50,9 @@ namespace Sol_Demo_WebApi.Models
 
         [DataMember(EmitDefaultValue = false)]
         public String Password { get; set; }
+	
+	[DataMember(EmitDefaultValue = false)]
+        public DateTime DateOfBirth { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public String Token { get; set; }
@@ -130,6 +133,7 @@ namespace Sol_Demo_WebApi.Repository
             string tempFullName = "Kishor Naik";
             string tempUserName = "kishor11";
             string tempPassword = "123";
+	    DateTime tempDateOfBirth = new DateTime(1986, 08, 11);
             int? tempId = 1;
             String tempRole = "Admin";
 
@@ -147,6 +151,7 @@ namespace Sol_Demo_WebApi.Repository
                 List<Claim> claims = new List<Claim>();
                 claims.Add(new Claim(ClaimTypes.Name, Convert.ToString(usersModel.Id))); // Id Base
                 claims.Add(new Claim(ClaimTypes.Role, usersModel.Role)); // Role Base
+		claims.Add(new Claim(ClaimTypes.DateOfBirth, usersModel.DateOfBirth.ToString())); // Policy Base
 
                 // Generate Token
                 usersModel.Token = await generateJwtToken.CreateJwtTokenAsync(options?.Value?.SecretKey, claims.ToArray(), DateTime.Now.AddDays(1));
@@ -174,6 +179,7 @@ Define Claims for Authication and Authorization.
                 List<Claim> claims = new List<Claim>();
                 claims.Add(new Claim(ClaimTypes.Name, Convert.ToString(usersModel.Id))); // Id Base
                 claims.Add(new Claim(ClaimTypes.Role, usersModel.Role)); // Role Base
+		claims.Add(new Claim(ClaimTypes.DateOfBirth, usersModel.DateOfBirth.ToString())); // Policy Base
 ```
 
 Generate Jwt Token
@@ -186,7 +192,50 @@ CreateJwtTokenAsync method have 3 parameters.
 * Pass collection of claims
 * Pass date and time for auth expiration.
 
-### Step 7
+### Step 7 (Policy base)
+Let suppose you might want to require user to be over 21 to access the api. You have a date of birth claim, you can use this info to define an “Over21Only” policy. To do this, you have to create a “MinimumAgeRequirement” and the handler with the logic to validate if the user is meeting the minimum age requirement.
+
+7.1 Create a Requirement, like this.
+```C#
+public class MinimumAgeRequirement : IAuthorizationRequirement
+{
+	public MinimumAgeRequirement(int age)
+	{
+	    MinimumAge = age;
+	}
+
+	public int MinimumAge { get; set; }
+}
+```
+7.2 Create a Handler, like this.
+```C#
+public class MinimumAgeHandler : AuthorizationHandler<MinimumAgeRequirement>
+{
+	protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, MinimumAgeRequirement requirement)
+	{
+	    if (!context.User.HasClaim(c => c.Type == ClaimTypes.DateOfBirth))
+	    {
+		return Task.CompletedTask;
+	    }
+
+	    var dateOfBirth = Convert.ToDateTime(context.User.FindFirst(c => c.Type == ClaimTypes.DateOfBirth).Value);
+
+	    var userAge = DateTime.Today.Year - dateOfBirth.Year;
+
+	    if (dateOfBirth > DateTime.Today.AddYears(-userAge))
+	    {
+		userAge--;
+	    }
+
+	    if (userAge >= requirement.MinimumAge)
+	    {
+		context.Succeed(requirement);
+	    }
+	    return Task.CompletedTask;
+	}
+}
+```
+### Step 8
 The ASP.NET Core demo controller defines and handles all routes / endpoints for the api that relate to users, this includes authentication.
 The controller actions are secured with JWT using the [Authorize] & [AllowAnonymous] attribute.
 
@@ -230,6 +279,7 @@ namespace Sol_Demo_WebApi.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+	[Authorize(Policy = "Over21Only")]
         [HttpPost("dowork")]
         public IActionResult DoWork()
         {
@@ -239,10 +289,10 @@ namespace Sol_Demo_WebApi.Controllers
 }
 ```
 
-### Step 8
+### Step 9
 The startup class configures the request pipeline of the application and how all requests are handled.
 
-#### Step 8.1 
+#### Step 9.1 
 Configure AddJwtToken service and read application setting json file. 
 ``` C#
 
@@ -262,14 +312,18 @@ public void ConfigureServices(IServiceCollection services)
             services.Configure<AppSettingsModel>(Configuration.GetSection("Jwt"));
             var getSecretKey = Configuration.GetSection("Jwt").Get<AppSettingsModel>();
 
-            services.AddJwtToken(getSecretKey.SecretKey); // Add Jwt Token Service
+            services.AddJwtToken(getSecretKey.SecretKey,(authOption) =>
+                {
+                    authOption.AddPolicy("Over21Only", (policy) => policy.Requirements.Add(new MinimumAgeRequirement(21))); // Add Policy Base
+                }); // Add Jwt Token Service
 
             services.AddTransient<IUserRepository, UserRepository>();
         }
 
 ```
+Note : Add policy it is an optional.
 
-#### Step 8.2
+#### Step 9.2
 In Configure method add following middleware for http request pipeline.
 Note : Add UseJwtToken middleware before UseAuthorization method.
 ``` C#
@@ -339,7 +393,10 @@ namespace Sol_Demo_WebApi
             services.Configure<AppSettingsModel>(Configuration.GetSection("Jwt"));
             var getSecretKey = Configuration.GetSection("Jwt").Get<AppSettingsModel>();
 
-            services.AddJwtToken(getSecretKey.SecretKey); // Add Jwt Token Service
+            services.AddJwtToken(getSecretKey.SecretKey,(authOption) =>
+                {
+                    authOption.AddPolicy("Over21Only", (policy) => policy.Requirements.Add(new MinimumAgeRequirement(21))); // Add Policy Base
+                }); // Add Jwt Token Service
 
             services.AddTransient<IUserRepository, UserRepository>();
         }
@@ -367,12 +424,12 @@ namespace Sol_Demo_WebApi
 }
 ```
 
-### Step 9 
+### Step 10 
 Run the services and test web api endpoint using Postman tool.
 
 Below are instructions on how to use Postman to authenticate a user to get a JWT token from the api, and then make an authenticated request with the JWT token to retrieve a string from the api.
 
-#### Step 9.1
+#### Step 10.1
 To authenticate a user with the api and get a JWT token follow these steps:
 * Open a new request tab by clicking the plus (+) button at the end of the tabs.
 * Change the http request method to "POST" with the dropdown selector on the left of the URL input field.
@@ -392,7 +449,7 @@ To authenticate a user with the api and get a JWT token follow these steps:
 
 ![Web Api : Check Login Credentails Response](https://i.postimg.cc/YCfQFyRH/Image1.png)
 
-#### Step 9.2
+#### Step 10.2
 To make an authenticated request using the JWT token from the previous step, follow these steps
 * Open a new request tab by clicking the plus (+) button at the end of the tabs.
 * Change the http request method to "POST" with the dropdown selector on the left of the URL input field.
